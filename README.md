@@ -30,7 +30,7 @@ All values below are loaded from `DATASETS` and `Config` in `train_mvc.py`. Para
 
 | Dataset | Epochs | Latent dim. | Hidden layers | Recovery hidden | Ridge | `lambda_corr` | `lambda_nbr` | `tau_n` | Preprocessing | Pullback backend |
 |---|---:|---:|---|---:|---:|---:|---:|---:|---|---|
-| Reuters | 20 | 64 | 512 | 512 | 0.005 | 1.0 | 0.3 | 0.2 | TF-IDF + SVD-100 + L2 | cached |
+| Reuters | 20 | 64 | 512 | 512 | 0.005 | 1.0 | 0.3 | 0.2 | TF-IDF + SVD-100 + L2 | original |
 | ALOI | 80 | 128 | 256, 128 | 128 | 0.005 | 0.1 | 1.0 | 0.2 | z-score | original |
 | COIL20 | **200** | **64** | **512** | **512** | **0.005** | **1.0** | **0.3** | **0.2** | z-score | original |
 | MSRC_v1 | 300 | 64 | 512 | 512 | 0.002 | 1.0 | 0.1 | 0.2 | z-score | original |
