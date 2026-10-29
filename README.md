@@ -1,50 +1,121 @@
-# RPTM: Incomplete Multi-View Clustering
+# RPTM: A Geometric Prototype Matching Framework for Incomplete Multi-View Clustering
 
-This repository contains a two-stage implementation of RPTM for **Reuters, ALOI, COIL20, MSRC_v1, and Mfeat**. It includes Pullback-conditioned representation correction and Tangent–Cosine prototype matching.
+This repository provides an implementation of **RPTM**, a two-stage framework for incomplete multi-view clustering. RPTM combines geometry-conditioned representation correction with Tangent–Cosine prototype matching to address incomplete observations and improve clustering in a shared representation space.
+
+The implementation includes the complete training and clustering pipeline, dataset preprocessing, missing-view generation, evaluation, and experiment configuration.
+
+## Overview
+
+Incomplete multi-view clustering aims to group samples when some views are unavailable. RPTM addresses this problem through two complementary stages.
+
+**Stage 1: Pullback-Conditioned Representation Correction**
+
+The first stage learns a shared representation and corrects incomplete-view representations using decoder-induced Pullback geometry. The training objective incorporates reconstruction, correction, and neighborhood-preservation terms.
+
+**Stage 2: Tangent–Cosine Prototype Matching**
+
+The second stage performs clustering using a matching cost that combines cosine distance with a geometry-conditioned tangent component. It alternates between sample assignment and prototype optimization under the unit-sphere constraint.
+
+The implementation provides a unified pipeline for training, clustering, and evaluation across multiple incomplete multi-view datasets.
+
+## Repository Structure
+
+```text
+.
+├── model.py
+├── train.py
+├── data.py
+├── clustering.py
+├── train_mvc.py
+├── requirements.txt
+├── README.md
+└── .gitignore
+```
+
+- `model.py`: Shared representation learning, decoder-based geometric correction, and training losses.
+- `train.py`: First-stage model training.
+- `data.py`: Dataset loading, preprocessing, and missing-view mask generation.
+- `clustering.py`: Tangent–Cosine matching, constrained sample assignment, and prototype optimization.
+- `train_mvc.py`: Unified experiment entry point, dataset configurations, and result generation.
+- `requirements.txt`: Python dependencies.
 
 ## Installation
 
-Python 3.10+ and a compatible PyTorch build are required. Install dependencies with:
+Python 3.10 or later and a compatible PyTorch installation are recommended.
+
+Install the dependencies with:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Data format
+Install a PyTorch build compatible with your hardware and CUDA environment if GPU acceleration is required.
 
-Dataset files are not distributed in this repository. Put files in `data/` or supply `--data-file`.
+## Supported Benchmarks
 
-| Dataset | Filename | Classes | Required MAT fields |
-|---|---|---:|---|
-| Reuters | `Reuters.mat` | 6 | `X` (view cell array), `y` |
-| ALOI | `ALOI.mat` | 100 | `X` (view cell array), `y` |
-| COIL20 | `COIL20.mat` | 20 | `X` (view cell array), `y` |
-| MSRC_v1 | `MSRC_v1.mat` | 7 | `msr1`...`msr5` or `X1`...`X5`, plus labels; 5-view `X` cell arrays are supported |
-| Mfeat | `Mfeat.mat` | 10 | `X` (view cell array), `Y` |
+The implementation supports the following five multi-view clustering benchmarks:
 
-Labels are used only for evaluation. Observed feature vectors are preprocessed independently in each view. Reuters uses TF-IDF and truncated SVD (100 components), followed by L2 normalization.
+| Dataset | Number of views | Number of clusters |
+|---|---:|---:|
+| Reuters | 5 | 6 |
+| ALOI | 4 | 100 |
+| COIL20 | 3 | 20 |
+| MSRC_v1 | 5 | 7 |
+| Mfeat | 6 | 10 |
 
-## Dataset configurations
+These datasets serve as evaluation benchmarks for the same overall RPTM pipeline. Dataset-specific configurations specify the experimental settings used for each benchmark; they do not define separate clustering algorithms.
 
-All values below are loaded from `DATASETS` and `Config` in `train_mvc.py`. Parameters are constant across missing rates and seeds unless overridden explicitly.
+## Data Preparation
 
-| Dataset | Epochs | Latent dim. | Hidden layers | Recovery hidden | Ridge | `lambda_corr` | `lambda_nbr` | `tau_n` | Preprocessing | Pullback backend |
-|---|---:|---:|---|---:|---:|---:|---:|---:|---|---|
-| Reuters | 20 | 64 | 512 | 512 | 0.005 | 1.0 | 0.3 | 0.2 | TF-IDF + SVD-100 + L2 | original |
-| ALOI | 80 | 128 | 256, 128 | 128 | 0.005 | 0.1 | 1.0 | 0.2 | z-score | original |
-| COIL20 | **200** | **64** | **512** | **512** | **0.005** | **1.0** | **0.3** | **0.2** | z-score | original |
-| MSRC_v1 | 300 | 64 | 512 | 512 | 0.002 | 1.0 | 0.1 | 0.2 | z-score | original |
-| Mfeat | 80 | 64 | 512 | 512 | 0.005 | 1.0 | 0.3 | 0.2 | z-score | original |
+Dataset files are not included in this repository. Place the corresponding MATLAB files in the `data/` directory or provide their paths through `--data-file`.
 
-## Usage
+The default filenames and supported data formats are listed below.
 
-Run COIL20 with its declared defaults:
+| Dataset | Default filename | Supported data fields |
+|---|---|---|
+| Reuters | `Reuters.mat` | `X` (view cell array), `y` |
+| ALOI | `ALOI.mat` | `X` (view cell array), `y` |
+| COIL20 | `COIL20.mat` | `X` (view cell array), `y` |
+| MSRC_v1 | `MSRC_v1.mat` | `msr1`–`msr5`, `X1`–`X5`, or a five-view `X` cell array; labels are also required |
+| Mfeat | `Mfeat.mat` | `X` (view cell array), `Y` |
+
+The loader should be configured according to the actual field names and array layout of each dataset file.
+
+Labels are used for evaluation and are not intended to participate in representation learning, prototype initialization, or clustering optimization.
+
+## Experimental Configuration
+
+The same two-stage algorithm is used across all supported benchmarks. Dataset-specific hyperparameters are defined in `train_mvc.py` to accommodate differences in dataset scale, feature dimensionality, and experimental settings.
+
+The following table summarizes the main configuration values.
+
+| Dataset | Epochs | Latent dimension | Encoder hidden layers | Recovery hidden dimension | Ridge | `lambda_corr` | `lambda_nbr` | `tau_n` | Preprocessing |
+|---|---:|---:|---|---:|---:|---:|---:|---:|---|
+| Reuters | 20 | 64 | 512 | 512 | 0.005 | 1.0 | 0.3 | 0.2 | TF-IDF, SVD-100, L2 normalization |
+| ALOI | 80 | 128 | 256, 128 | 128 | 0.005 | 0.1 | 1.0 | 0.2 | Z-score |
+| COIL20 | 200 | 64 | 512 | 512 | 0.005 | 1.0 | 0.3 | 0.2 | Z-score |
+| MSRC_v1 | 300 | 64 | 512 | 512 | 0.002 | 1.0 | 0.1 | 0.2 | Z-score |
+| Mfeat | 80 | 64 | 512 | 512 | 0.005 | 1.0 | 0.3 | 0.2 | Z-score |
+
+Other parameters, including optimizer settings, Pullback computation settings, neighborhood configuration, and prototype optimization parameters, are defined in the configuration and implementation files.
+
+Unless explicitly overridden, the configured values remain fixed across missing rates and random seeds for each dataset.
+
+## Running Experiments
+
+The unified entry point is `train_mvc.py`.
+
+For example, to evaluate RPTM on COIL20 under several missing rates:
 
 ```bash
-python train_mvc.py --dataset coil20 --data-file data/COIL20.mat --mr 0.1 0.3 0.5 0.7 --seeds 0 1 2 3 4
+python train_mvc.py \
+    --dataset coil20 \
+    --data-file data/COIL20.mat \
+    --mr 0.1 0.3 0.5 0.7 \
+    --seeds 0 1 2 3 4
 ```
 
-Run other datasets:
+To run the other supported benchmarks:
 
 ```bash
 python train_mvc.py --dataset reuters --data-file data/Reuters.mat
@@ -53,12 +124,63 @@ python train_mvc.py --dataset msrc_v1 --data-file data/MSRC_v1.mat
 python train_mvc.py --dataset mfeat --data-file data/Mfeat.mat
 ```
 
-The default device is CUDA if available and CPU otherwise. `--device cuda:0` and `--device cpu` explicitly select a device. Options include `--epochs`, `--latent`, `--hidden`, `--lambda-corr`, `--lambda-nbr`, `--rho-cluster`, `--streams`, and `--selection-tol`. The model initialization seed defaults to zero (`--model-seed`), while `--seeds` varies the incomplete-view masks. These are distinct controls.
+The device defaults to CUDA when available and otherwise falls back to CPU. To specify the device explicitly, use:
 
-## Results
+```bash
+--device cuda:0
+```
 
-The experiment directory contains per-run `config.json`, `metrics.json`, and `labels.npy`. `summary.csv` and `summary.json` contain means and standard deviations over completed runs. Ground-truth labels are not used in optimization or restart selection.
+or:
 
-## Scope and limitations
+```bash
+--device cpu
+```
 
-This is a source-cleaned release candidate, not an independently verified reproduction of the numerical results on the five original datasets. The included source and synthetic-data runtime checks do not establish real-data clustering accuracy. Choose an appropriate license before publishing the repository.
+Additional command-line options allow selected training and clustering parameters to be overridden. Run the following command to inspect the options supported by the current implementation:
+
+```bash
+python train_mvc.py --help
+```
+
+## Evaluation and Outputs
+
+The implementation evaluates clustering performance using standard metrics, including:
+
+- Clustering accuracy (ACC)
+- Normalized mutual information (NMI)
+- Adjusted Rand index (ARI)
+
+Experiment outputs include per-run configurations and metrics, predicted cluster assignments, and aggregated summaries across completed runs.
+
+Ground-truth labels are used for evaluation only. They should not be used to select hyperparameters, choose checkpoints, or select clustering solutions based on evaluation performance.
+
+## Reproducibility
+
+For reproducible experiments, record the dataset version, preprocessing configuration, missing rate, random seeds, model parameters, and software environment.
+
+The model initialization seed and missing-mask seed control different sources of randomness. For fair comparisons, use consistent missing masks when comparing methods or configurations.
+
+Dataset-specific hyperparameters should be reported transparently, and all experimental comparisons should follow a consistent evaluation protocol.
+
+## Scope and Limitations
+
+This repository provides the source implementation and experiment pipeline for RPTM. The included code should be treated as an implementation release until the reported results have been independently reproduced on the original datasets.
+
+The availability of source code and successful synthetic-data tests does not by itself establish reproduction of the numerical results reported in the paper.
+
+Please consult the source code and experiment configurations for implementation details and limitations.
+
+## Citation
+
+If you use RPTM in your research, please cite the corresponding paper.
+
+```bibtex
+@article{rptm,
+  title   = {RPTM: A Geometric Prototype Matching Framework for Incomplete Multi-View Clustering},
+  author  = {Anonymous},
+  journal = {IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  year    = {Year}
+}
+```
+
+Replace the placeholder citation fields with the final bibliographic information when appropriate.
