@@ -36,32 +36,6 @@ All values below are loaded from `DATASETS` and `Config` in `train_mvc.py`. Para
 | MSRC_v1 | 300 | 64 | 512 | 512 | 0.002 | 1.0 | 0.1 | 0.2 | z-score | original |
 | Mfeat | 80 | 64 | 512 | 512 | 0.005 | 1.0 | 0.3 | 0.2 | z-score | original |
 
-The **COIL20** entry explicitly specifies every active `Config` setting so its parameters can be inspected without relying on implicit shared defaults:
-
-| Parameter | Value | Parameter | Value |
-|---|---:|---|---:|
-| `clusters` | 20 | `latent_dim` | 64 |
-| `epochs` | 200 | `hidden` | (512,) |
-| `recovery_hidden` | 512 | `lr` | 0.001 |
-| `batch_size` | 256 | `preprocess` | zscore |
-| `alpha_g` | 1.0 | `ridge` | 0.005 |
-| `mu_min` | 1e-8 | `trace_probes` | 8 |
-| `r_max` | pi/2 | `eps_w` | 1e-8 |
-| `eps_ang` | 1e-6 | `eps_f` | 1e-8 |
-| `cg_max_iter` | 64 | `cg_rtol` | 1e-5 |
-| `cg_atol` | 1e-9 | `lambda_corr` | 1.0 |
-| `lambda_nbr` | 0.3 | `tau_n` | 0.2 |
-| `rho_cluster` | 0.4 | `tau_cluster` | 0.1 |
-| `teacher_kmeans_iters` | 20 | `teacher_kmeans_restarts` | 3 |
-| `lambda_cos` | 0.7 | `lambda_tan` | 0.3 |
-| `beta` | 16.0 | `cluster_max_iter` | 100 |
-| `cluster_tol` | 1e-6 | `backtracking_steps` | 30 |
-| `backtracking_factor` | 0.5 | `match_batch_size` | 1024 |
-| `n_streams` | 8 | `selection_tol` | 0.02 |
-| `pullback_backend` | original | | |
-
-The COIL20 configuration was transcribed from the supplied `train_mvc.py` implementation. The separately supplied `run8(3).py` and `run_one.py` scripts concern an **ALOI-only `c04_teacher` experiment**, not COIL20, and are not included in this repository.
-
 ## Usage
 
 Run COIL20 with its declared defaults:
