@@ -169,18 +169,3 @@ This repository provides the source implementation and experiment pipeline for R
 The availability of source code and successful synthetic-data tests does not by itself establish reproduction of the numerical results reported in the paper.
 
 Please consult the source code and experiment configurations for implementation details and limitations.
-
-## Citation
-
-If you use RPTM in your research, please cite the corresponding paper.
-
-```bibtex
-@article{rptm,
-  title   = {RPTM: A Geometric Prototype Matching Framework for Incomplete Multi-View Clustering},
-  author  = {Anonymous},
-  journal = {IEEE Transactions on Pattern Analysis and Machine Intelligence},
-  year    = {Year}
-}
-```
-
-Replace the placeholder citation fields with the final bibliographic information when appropriate.
