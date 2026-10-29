@@ -2,8 +2,6 @@
 
 This repository contains a two-stage implementation of RPTM for **Reuters, ALOI, COIL20, MSRC_v1, and Mfeat**. It includes Pullback-conditioned representation correction and Tangent–Cosine prototype matching.
 
-The code implements the supplied research version. Changes relative to the current manuscript (including decoder normalization, the cluster-aware neighborhood teacher, calibration sampling, and deterministic multistart selection) must be described in the associated manuscript; no claim of strict equation-by-equation reproduction is made here.
-
 ## Installation
 
 Python 3.10+ and a compatible PyTorch build are required. Install dependencies with:
